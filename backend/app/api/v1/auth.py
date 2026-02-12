@@ -1,15 +1,13 @@
 # backend/app/api/v1/auth.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordRequestForm
 from backend.app.db.session import get_db
-from backend.app.crud.user import get_user_by_email, create_user
-from backend.app.schemas.user import UserCreate, Token
+from backend.app.crud.users import get_user_by_email, create_user
+from backend.app.schemas.users import UserCreate, Token
 from backend.app.core.security import verify_password, create_access_token
-from backend.app.schemas.user import TokenData
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 @router.post("/register", response_model=dict)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):

@@ -1,7 +1,7 @@
-# backend/app/crud/user.py
+# backend/app/crud/users.py
 from sqlalchemy.orm import Session
-from backend.app.models.user import User
-from backend.app.schemas.user import UserCreate
+from backend.app.models.users import User
+from backend.app.schemas.users import UserCreate
 from backend.app.core.security import get_password_hash
 
 def get_user_by_email(db: Session, email: str):

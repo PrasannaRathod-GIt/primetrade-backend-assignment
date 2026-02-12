@@ -3,7 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.api.v1 import auth, items
 from backend.app.db.session import Base, engine
-from backend.app.models import user, item  # ensure models are imported so metadata is created
+# import models to ensure metadata
+from backend.app.models import users as users_model, item as item_model
 
 app = FastAPI(title="Primetrade - Backend Assignment", version="0.1")
 
@@ -20,7 +21,6 @@ app.include_router(items.router)
 
 @app.on_event("startup")
 def on_startup():
-    # create tables
     Base.metadata.create_all(bind=engine)
 
 @app.get("/api/v1/health")
