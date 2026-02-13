@@ -1,15 +1,16 @@
-# backend/app/schemas/user.py
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    role: Optional[str] = "user"
+    full_name: str
+    role: Optional[str] = "user"  # default role is user
 
 class UserRead(BaseModel):
     id: int
     email: EmailStr
+    full_name: str
     role: str
     is_active: bool
 

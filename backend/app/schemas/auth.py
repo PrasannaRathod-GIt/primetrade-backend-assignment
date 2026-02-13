@@ -29,4 +29,5 @@ class TokenData(BaseModel):
     """JWT token payload schema."""
     
     sub: str
+    role: str   # add this for admin/user checks
     exp: int

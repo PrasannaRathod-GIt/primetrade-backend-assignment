@@ -2,12 +2,10 @@
 
 from typing import Generator
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base, Session
+from sqlalchemy.orm import sessionmaker, Session
 
 from backend.app.core.config import SQLALCHEMY_DATABASE_URL
-
-# Create Base class for models
-Base = declarative_base()
+from backend.app.db.base import Base  # import the single Base instance
 
 # Create engine
 engine = create_engine(
@@ -22,7 +20,7 @@ SessionLocal = sessionmaker(
     bind=engine,
 )
 
-# Dependency
+# Dependency for FastAPI endpoints
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:

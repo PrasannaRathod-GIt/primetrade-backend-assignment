@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Register — PrimeTrade</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div><strong>PrimeTrade</strong></div>
+  <nav>
+    <a href="register.html">Register</a>
+    <a href="login.html">Login</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+</header>
+
+<main>
+  <h2>Register</h2>
+
+  <form id="registerForm" novalidate>
+    <input type="text" id="full_name" placeholder="Full name" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password (min 6 chars)" required />
+    <button id="submitBtn" type="submit">Create account</button>
+    <div id="busy" class="small hidden">Processing…</div>
+  </form>
+
+  <div id="msg" class="msg hidden"></div>
+</main>
+
+<script>
+const BASE_URL = 'http://127.0.0.1:8000';
+const REGISTER_PATH = '/api/v1/auth/register';
+const form = document.getElementById('registerForm');
+const msgEl = document.getElementById('msg');
+const busy = document.getElementById('busy');
+const submitBtn = document.getElementById('submitBtn');
+
+function showMsg(text, type='error') {
+  msgEl.innerText = text;
+  msgEl.className = 'msg ' + (type === 'error' ? 'error' : 'success');
+  msgEl.classList.remove('hidden');
+}
+function clearMsg(){ msgEl.className='msg hidden'; msgEl.innerText=''; }
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMsg();
+
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const full_name = document.getElementById('full_name').value.trim();
+
+  if (!email || !password || password.length < 6) {
+    showMsg('Please fill valid email and password (min 6 chars).', 'error');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  busy.classList.remove('hidden');
+
+  try {
+    const res = await fetch(BASE_URL + REGISTER_PATH, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email, password, full_name })
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      showMsg(data?.detail || JSON.stringify(data) || 'Registration failed', 'error');
+    } else {
+      showMsg('Registered — redirecting to login...', 'success');
+      setTimeout(()=> location.href = 'login.html', 900);
+    }
+  } catch (err) {
+    showMsg('Network error: ' + err, 'error');
+  } finally {
+    submitBtn.disabled = false;
+    busy.classList.add('hidden');
+  }
+});
+</script>
+</body>
+</html>

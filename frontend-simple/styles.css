@@ -1,0 +1,19 @@
+body { font-family: Arial, sans-serif; margin: 20px; }
+input { margin: 6px 0; padding: 8px; }
+button { padding: 6px 10px; }
+/* Minimal clean styling for demo */
+:root { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+body { max-width: 800px; margin: 28px auto; padding: 16px; color:#111; }
+header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+nav a { margin-right:10px; text-decoration:none; color:#0b66ff; }
+form { background:#fff; padding:16px; border-radius:8px; box-shadow:0 3px 10px rgba(0,0,0,0.05); }
+input, button, textarea { width:100%; padding:10px; margin-top:8px; border-radius:6px; border:1px solid #ddd; box-sizing:border-box; }
+button { cursor:pointer; background:#0b66ff; color:white; border:none; padding:10px 12px; }
+.small { font-size:0.9rem; color:#666; margin-top:6px; }
+.msg { margin-top:12px; padding:10px; border-radius:6px; }
+.msg.error { background:#ffecec; color:#c00; }
+.msg.success { background:#e6ffed; color:#0a6c2a; }
+.item { padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; }
+.item .meta { color:#444; font-size:0.95rem; }
+.controls button { margin-left:6px; padding:6px 8px; background:#eee; color:#111; border-radius:6px; border:1px solid #ddd; }
+.hidden { display:none; }

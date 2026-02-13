@@ -7,7 +7,8 @@ from backend.app.schemas.item import ItemCreate, ItemRead, ItemUpdate
 from backend.app.crud.item import create_item, get_items, get_item, update_item, delete_item
 from backend.app.api.v1.deps import get_current_user, require_admin
 
-router = APIRouter(prefix="/api/v1/items", tags=["items"])
+router = APIRouter(tags=["items"])
+
 
 @router.post("/", response_model=ItemRead)
 def create_new_item(item_in: ItemCreate, db: Session = Depends(get_db), user = Depends(get_current_user)):

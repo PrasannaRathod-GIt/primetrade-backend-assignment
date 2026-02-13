@@ -1,6 +1,6 @@
-"""SQLAlchemy declarative base and model imports."""
+# backend/app/db/base.py
+"""SQLAlchemy declarative base (no model imports here)."""
 
-from sqlalchemy.ext.declarative import declarative_base
-from app.models.item import Item  # noqa
+from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
