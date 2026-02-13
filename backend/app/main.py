@@ -1,37 +1,41 @@
 # backend/app/main.py
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from backend.app.api.v1 import auth, items
-from backend.app.db.session import engine
-from backend.app.db.base import Base
+from backend.app.db.session import Base, engine
 
-# Import models so SQLAlchemy registers them
-from backend.app.models import users as users_model
-from backend.app.models import item as item_model
+# Import models so SQLAlchemy sees them and can create tables on startup.
+from backend.app.models import users as users_model, item as item_model
 
-app = FastAPI(
-    title="Primetrade - Backend Assignment",
-    version="0.1"
-)
+app = FastAPI(title="Primetrade - Backend Assignment", version="0.1")
 
-# CORS (development only)
+# --- SAFE CORS (development) ---
+# Allow only the local origins you use for serving frontend during development.
+# Add more origins here if you serve the frontend from a different host/port.
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    # optionally include other dev ports you use:
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,      # <-- NOT "*"
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# --------------------------------
 
-# Routers
+# Mount routers under versioned API prefixes
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(items.router, prefix="/api/v1/items", tags=["items"])
 
 @app.on_event("startup")
 def on_startup():
-    # Create tables if not exist
+    # Ensure tables exist (no-op if already present)
     Base.metadata.create_all(bind=engine)
 
 @app.get("/api/v1/health", tags=["health"])
