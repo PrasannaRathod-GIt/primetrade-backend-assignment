@@ -28,22 +28,25 @@ Simple backend built for the Primetrade Backend Developer (Intern) assignment. I
 
 ---
 
-## 📁 Project structure (important files)
-```
+## 📁 Project Structure
 
-backend/
-app/
-main.py                # FastAPI app entry
-api/                   # routers
-core/                  # config
-db/                    # session, models, migrations
-models/
-schemas/
-frontend-simple/
-README.md
-.github/workflows/ci.yml
-backend/requirements.txt
-.env.example
+```
+primetrade/
+│
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── api/
+│   │   ├── core/
+│   │   ├── db/
+│   │   ├── models/
+│   │   └── schemas/
+│   └── requirements.txt
+│
+├── frontend-simple/
+├── .env.example
+└── README.md
+```
 
 ````
 
@@ -69,6 +72,8 @@ python -m venv .venv
 python3 -m venv .venv
 source .venv/bin/activate
 ```
+
+---
 
 ### 2. Install dependencies
 
@@ -150,6 +155,28 @@ pytest backend/app/tests -v
 
 ---
 
+
+## 🔌 API Endpoints
+
+### Authentication
+- `POST /auth/register` — Register a new user
+- `POST /auth/login` — Login and receive JWT access token
+
+### Items
+- `GET /items` — List items (authenticated users)
+- `POST /items` — Create item (admin only)
+- `PUT /items/{id}` — Update item (admin only)
+- `DELETE /items/{id}` — Delete item (admin only)
+
+---
+
+## 🔐 Role-Based Access Control (RBAC)
+
+- Default role: `user`
+- Admin users can create, update, and delete items.
+- Regular users can only view items.
+- Access control is enforced using JWT authentication and FastAPI dependencies.
+
 ## 🔐 Security & housekeeping
 
 ### .env.example (copy this to `.env.example` and edit locally)
@@ -169,123 +196,3 @@ __pycache__/
 *.pyc
 ```
 
-### Remove `.env` from git tracking (if accidentally committed)
-
-```powershell
-# from repo root (PowerShell)
-git rm --cached .env
-git commit -m "chore: remove .env from repo"
-git push
-```
-
-### Remove pycache files from git (if present)
-
-```powershell
-# remove cached __pycache__ entries
-git rm -r --cached backend/app/__pycache__
-# repeat as needed for other __pycache__ folders
-git commit -m "chore: remove pycache files"
-git push
-```
-
----
-
-## 2) Corrected GitHub Actions workflow (copy to `.github/workflows/ci.yml`)
-
-```yaml
-name: CI
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        working-directory: ./backend
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Run tests (if present)
-        working-directory: ./backend
-        run: |
-          if [ -d tests ]; then
-            echo "Running tests/..."
-            pytest tests -v
-          else
-            echo "No tests found — skipping pytest"
-          fi
-```
-
----
-
-## 3) Minimal test file (copy to `backend/app/tests/test_root.py`)
-
-```python
-# backend/app/tests/test_root.py
-from fastapi.testclient import TestClient
-from app.main import app
-
-client = TestClient(app)
-
-def test_root_returns_200():
-    response = client.get("/")
-    assert response.status_code == 200
-```
-
----
-
-## 4) Helpful psql commands to verify data (copy-paste)
-
-```sql
--- connect (from shell):
-psql -h localhost -U postgres -d primetrade
-
--- inside psql:
-\dt
-SELECT id, email, full_name, role FROM users;
-\q
-```
-
-Or one-liner from shell (prompts for password):
-
-```bash
-psql -h localhost -U postgres -d primetrade -c "SELECT id, email, full_name, role FROM users;"
-```
-
----
-
-## 5) Quick local debug checklist (if something fails)
-
-* Ensure Postgres is running and credentials in `.env` match the DB user/password.
-* If `uvicorn` shows an import error, re-check `uvicorn` import path and working directory.
-* If tests fail due to DB, ensure test DB or `DATABASE_URL` points to a test DB (your workflow uses `test_db`).
-* Pydantic v2 warnings about `orm_mode` are harmless; to fix later change schema config to `model_config = {"from_attributes": True}`.
