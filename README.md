@@ -29,8 +29,6 @@ Simple backend built for the Primetrade Backend Developer (Intern) assignment. I
 ---
 
 ## 📁 Project Structure
-
-```
 primetrade/
 │
 ├── backend/
@@ -179,7 +177,7 @@ pytest backend/app/tests -v
 
 ## 🔐 Security & housekeeping
 
-### .env.example (copy this to `.env.example` and edit locally)
+### .env.example 
 
 ```
 DATABASE_URL=postgresql+psycopg2://postgres:yourpassword@localhost:5432/primetrade
@@ -187,7 +185,7 @@ JWT_SECRET=replace-with-secure-random-value
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 ```
 
-### .gitignore (ensure your repo contains these lines)
+### .gitignore 
 
 ```
 .env
