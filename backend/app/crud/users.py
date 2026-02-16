@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+﻿from sqlalchemy.orm import Session
 from backend.app.models.users import User
 from backend.app.schemas.users import UserCreate
 from backend.app.core.security import get_password_hash

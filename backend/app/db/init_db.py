@@ -1,4 +1,4 @@
-"""Database initialization script."""
+﻿"""Database initialization script."""
 
 from app.db.base import Base
 from app.db.session import engine

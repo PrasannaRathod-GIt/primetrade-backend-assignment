@@ -1,4 +1,4 @@
-"""Items endpoint tests."""
+﻿"""Items endpoint tests."""
 
 import pytest
 from fastapi.testclient import TestClient

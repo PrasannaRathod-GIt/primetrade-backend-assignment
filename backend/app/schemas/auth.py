@@ -1,4 +1,4 @@
-"""Authentication request/response schemas."""
+﻿"""Authentication request/response schemas."""
 
 from pydantic import BaseModel, EmailStr
 

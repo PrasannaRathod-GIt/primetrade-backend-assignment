@@ -1,4 +1,4 @@
-"""Logger configuration."""
+﻿"""Logger configuration."""
 
 import logging
 from app.core.config import settings

@@ -1,4 +1,4 @@
-# backend/app/models/item.py
+﻿# backend/app/models/item.py
 from sqlalchemy import Column, Integer, String, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from backend.app.db.session import Base

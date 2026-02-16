@@ -1,4 +1,4 @@
-# backend/app/crud/item.py
+﻿# backend/app/crud/item.py
 from sqlalchemy.orm import Session
 from backend.app.models.item import Item
 from backend.app.schemas.item import ItemCreate, ItemUpdate

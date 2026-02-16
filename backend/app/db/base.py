@@ -1,4 +1,4 @@
-# backend/app/db/base.py
+﻿# backend/app/db/base.py
 """SQLAlchemy declarative base (no model imports here)."""
 
 from sqlalchemy.orm import declarative_base

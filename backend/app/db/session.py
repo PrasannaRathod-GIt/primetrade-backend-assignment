@@ -1,4 +1,4 @@
-# backend/app/db/session.py
+﻿# backend/app/db/session.py
 
 from typing import Generator
 from sqlalchemy import create_engine

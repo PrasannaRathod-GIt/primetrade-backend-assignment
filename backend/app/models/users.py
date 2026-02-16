@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean
+﻿from sqlalchemy import Column, Integer, String, Boolean
 from backend.app.db.session import Base
 
 class User(Base):
