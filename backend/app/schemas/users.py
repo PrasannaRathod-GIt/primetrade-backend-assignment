@@ -5,17 +5,22 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str
-    role: Optional[str] = "user"  # default role is user
+    role: Optional[str] = "user"
 
 class UserRead(BaseModel):
     id: int
     email: EmailStr
     full_name: str
     role: str
-    is_active: bool
+    is_active: bool = True
 
     class Config:
         orm_mode = True
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str]
+    email: Optional[EmailStr]
+    avatar_url: Optional[str]
 
 class Token(BaseModel):
     access_token: str
