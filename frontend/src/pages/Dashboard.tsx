@@ -1,78 +1,61 @@
-import { useEffect, useState } from "react";
+// src/pages/Dashboard.tsx
+import React, { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../lib/AuthContext";
 import { apiRequest } from "../lib/api";
 import { logout } from "../lib/auth";
-import { useNavigate, Link } from "react-router-dom";
-
-type Task = {
-  id: number;
-  title?: string;
-  name?: string;
-};
-
-type Profile = {
-  full_name?: string;
-  email?: string;
-  username?: string;
-};
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [err, setErr] = useState<string | null>(null);
+  const { user } = useContext(AuthContext);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [loadingTasks, setLoadingTasks] = useState(true);
   const nav = useNavigate();
 
   useEffect(() => {
-    load();
-  }, []);
+    if (!user) return; // wait for user
+    let mounted = true;
+    (async () => {
+      setLoadingTasks(true);
+      const t = await apiRequest("/api/v1/tasks/"); // trailing slash
+      if (mounted && t.ok) {
+        if (Array.isArray(t.data)) setTasks(t.data);
+        else if (t.data && Array.isArray((t.data as any).data)) setTasks((t.data as any).data);
+        else setTasks([]);
+      } else {
+        if (mounted) setTasks([]);
+      }
+      if (mounted) setLoadingTasks(false);
+    })();
+    return () => { mounted = false; };
+  }, [user]);
 
-  async function load(): Promise<void> {
-    setErr(null);
-
-    const p = await apiRequest<Profile>("/api/v1/profile");
-    if (p.ok && p.data) setProfile(p.data);
-
-    const t = await apiRequest<Task[]>("/api/v1/tasks");
-    if (t.ok && t.data) setTasks(Array.isArray(t.data) ? t.data : []);
-  }
-
-  function doLogout(): void {
+  function doLogout() {
     logout();
     nav("/login");
   }
+
+  if (!user) return <div>Loading profile...</div>;
 
   return (
     <div style={{ padding: 16 }}>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <h2>Dashboard</h2>
         <div>
-          <Link to="/profile" style={{ marginRight: 12 }}>
-            Profile
-          </Link>
+          <Link to="/profile" style={{ marginRight: 12 }}>Profile</Link>
           <button onClick={doLogout}>Logout</button>
         </div>
       </div>
 
-      {err && <p style={{ color: "red" }}>{err}</p>}
-
       <section style={{ marginTop: 16 }}>
         <h3>Profile</h3>
-        {profile ? (
-          <div>{profile.full_name || profile.email || profile.username}</div>
-        ) : (
-          <div>Loading profile...</div>
-        )}
+        <div>{user.full_name ?? user.email}</div>
       </section>
 
       <section style={{ marginTop: 16 }}>
         <h3>Tasks</h3>
-        {tasks.length === 0 ? (
-          <div>No tasks found.</div>
-        ) : (
-          <ul>
-            {tasks.map((t) => (
-              <li key={t.id}>{t.title || t.name}</li>
-            ))}
-          </ul>
+        {loadingTasks ? <div>Loading tasks...</div> : (
+          tasks.length === 0 ? <div>No tasks found.</div> :
+          <ul>{tasks.map((t:any) => <li key={t.id}>{t.title ?? t.name}</li>)}</ul>
         )}
       </section>
     </div>
