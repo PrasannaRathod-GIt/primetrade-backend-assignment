@@ -47,3 +47,43 @@ def read_current_user(user = Depends(get_current_user)):
         "role": user.role,
         "full_name": getattr(user, "full_name", None)
     }
+# ... existing imports ...
+
+# -------------------- UPDATED ENDPOINTS --------------------
+
+@router.get("/me", response_model=dict)
+def read_current_user(user = Depends(get_current_user)):
+    """
+    Return current logged-in user info
+    """
+    return {
+        "id": user.id,
+        "email": user.email,
+        "role": user.role,
+        "full_name": getattr(user, "full_name", None)
+    }
+
+@router.put("/me", response_model=dict)
+def update_current_user(
+    data: dict, 
+    db: Session = Depends(get_db), 
+    user = Depends(get_current_user)
+):
+    """
+    Update current logged-in user's profile info
+    """
+    new_name = data.get("full_name")
+    if new_name is None:
+        raise HTTPException(status_code=400, detail="Full name field is required")
+    
+    # Update the database object
+    user.full_name = new_name
+    db.commit()
+    db.refresh(user)
+    
+    return {
+        "id": user.id,
+        "email": user.email,
+        "role": user.role,
+        "full_name": user.full_name
+    }

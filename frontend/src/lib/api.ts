@@ -8,7 +8,7 @@ export type ApiResponse<T = unknown> = {
   error?: string;
 };
 
-async function parseResponse(res: Response): Promise<unknown> {
+async function parseResponse(res: Response): Promise<any> {
   const text = await res.text();
   try { return JSON.parse(text); } catch { return text; }
 }
@@ -16,20 +16,26 @@ async function parseResponse(res: Response): Promise<unknown> {
 export async function apiRequest<T = unknown>(path: string, opts: RequestInit = {}): Promise<ApiResponse<T>> {
   const token = localStorage.getItem("token");
 
-  // If body is JSON string, keep Content-Type; if FormData, don't set it
-  const baseHeaders: Record<string,string> = {};
+  const baseHeaders: Record<string, string> = {};
   if (!(opts.body instanceof FormData)) baseHeaders["Content-Type"] = "application/json";
   if (token) baseHeaders["Authorization"] = `Bearer ${token}`;
 
-  // merge headers but ensure Authorization isn't overwritten by consumer
-  const headers = { ...baseHeaders, ...(opts.headers as Record<string,string> || {}) };
+  const headers = { ...baseHeaders, ...(opts.headers as Record<string, string> || {}) };
 
   const res = await fetch(`${API_URL}${path}`, { ...opts, headers, credentials: "omit" });
   const parsed = await parseResponse(res);
 
   if (!res.ok) {
-    const err = (parsed && ((parsed as any).detail || (parsed as any).error || (parsed as any).message)) || res.statusText;
-    return { ok: false, status: res.status, error: String(err) };
+    // Fixed: safer way to access error properties without using 'any'
+    let errorMessage = res.statusText;
+    if (parsed && typeof parsed === 'object') {
+      errorMessage = (parsed as Record<string, any>).detail || 
+                     (parsed as Record<string, any>).error || 
+                     (parsed as Record<string, any>).message || 
+                     res.statusText;
+    }
+    
+    return { ok: false, status: res.status, error: String(errorMessage) };
   }
   return { ok: true, status: res.status, data: parsed as T };
 }

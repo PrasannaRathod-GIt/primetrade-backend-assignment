@@ -1,20 +1,19 @@
-// src/lib/AuthContext.tsx
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState, ReactNode } from "react";
 import api from "../api/client";
 
-type User = {
+export interface User {
   id: number;
   email: string;
   role: string;
   full_name?: string | null;
-};
+}
 
-type AuthContextType = {
+interface AuthContextType {
   user: User | null;
   setUser: (u: User | null) => void;
   loading: boolean;
   logout: () => void;
-};
+}
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -23,7 +22,7 @@ export const AuthContext = createContext<AuthContextType>({
   logout: () => {}
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,9 +34,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       try {
-        const res = await api.get("/auth/me");
+        const res = await api.get<User>("/auth/me");
         setUser(res.data);
-      } catch (err) {
+      } catch {
         localStorage.removeItem("token");
         setUser(null);
       } finally {
@@ -50,7 +49,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   function logout() {
     localStorage.removeItem("token");
     setUser(null);
-    // navigate to login; keep it simple and reload
     window.location.href = "/login";
   }
 

@@ -1,6 +1,7 @@
 // src/lib/auth.ts
 import { apiRequest, API_URL } from "./api";
 
+
 export async function loginApi(email: string, password: string) {
   // OAuth2 password grant: form-urlencoded to /api/v1/auth/token
   const body = new URLSearchParams();

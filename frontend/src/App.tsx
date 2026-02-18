@@ -7,7 +7,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
-import ItemsList from "./pages/items/ItemsList"; // adjust if different filename
+import ItemsList from "./pages/items/ItemsList";
+import ItemNew from "./pages/items/ItemNew"; // ✅ added
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function LayoutRoutes() {
@@ -40,6 +41,16 @@ function LayoutRoutes() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ✅ NEW ITEM PAGE (must be above /items) */}
+          <Route
+            path="/items/new"
+            element={
+              <ProtectedRoute>
+                <ItemNew />
               </ProtectedRoute>
             }
           />
