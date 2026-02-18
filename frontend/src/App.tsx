@@ -1,28 +1,71 @@
 // src/App.tsx
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+
+import Header from "./components/Header";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import ItemsList from "./pages/items/ItemsList"; // adjust if different filename
 import ProtectedRoute from "./components/ProtectedRoute";
+
+function LayoutRoutes() {
+  const location = useLocation();
+  // hide header on auth pages
+  const hideHeader = location.pathname === "/login" || location.pathname === "/register";
+
+  return (
+    <>
+      {!hideHeader && <Header />}
+
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        <Routes>
+          {/* Public */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          {/* Protected pages */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/items"
+            element={
+              <ProtectedRoute>
+                <ItemsList />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Root + fallback */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+    </>
+  );
+}
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
-        <Route path="/dashboard" element={
-          <ProtectedRoute><Dashboard /></ProtectedRoute>
-        }/>
-
-        <Route path="/profile" element={
-          <ProtectedRoute><Profile /></ProtectedRoute>
-        }/>
-
-        <Route path="/" element={<Navigate to="/dashboard" />} />
-      </Routes>
+      <LayoutRoutes />
     </BrowserRouter>
   );
 }

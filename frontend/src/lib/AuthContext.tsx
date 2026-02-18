@@ -1,47 +1,61 @@
 // src/lib/AuthContext.tsx
 import React, { createContext, useEffect, useState } from "react";
-import { API_URL } from "./api";
+import api from "../api/client";
 
-export const AuthContext = createContext({
-  user: null as any | null,
-  setUser: (_: any | null) => {},
-  loading: true
+type User = {
+  id: number;
+  email: string;
+  role: string;
+  full_name?: string | null;
+};
+
+type AuthContextType = {
+  user: User | null;
+  setUser: (u: User | null) => void;
+  loading: boolean;
+  logout: () => void;
+};
+
+export const AuthContext = createContext<AuthContextType>({
+  user: null,
+  setUser: () => {},
+  loading: true,
+  logout: () => {}
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-    async function fetchMe() {
+    async function loadUser() {
       const token = localStorage.getItem("token");
       if (!token) {
-        if (mounted) setLoading(false);
+        setLoading(false);
         return;
       }
       try {
-        const res = await fetch(`${API_URL}/api/v1/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) {
-          if (mounted) setUser(null);
-        } else {
-          const data = await res.json();
-          if (mounted) setUser(data);
-        }
+        const res = await api.get("/auth/me");
+        setUser(res.data);
       } catch (err) {
-        if (mounted) setUser(null);
+        localStorage.removeItem("token");
+        setUser(null);
       } finally {
-        if (mounted) setLoading(false);
+        setLoading(false);
       }
     }
-    fetchMe();
-    return () => { mounted = false; };
+    loadUser();
   }, []);
 
+  function logout() {
+    localStorage.removeItem("token");
+    setUser(null);
+    // navigate to login; keep it simple and reload
+    window.location.href = "/login";
+  }
+
   return (
-    <AuthContext.Provider value={{ user, setUser, loading }}>
+    <AuthContext.Provider value={{ user, setUser, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );

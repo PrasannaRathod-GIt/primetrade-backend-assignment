@@ -1,8 +1,8 @@
-// src/pages/Profile.tsx
 import React, { useContext, useEffect, useState } from "react";
-import { apiRequest } from "../lib/api";
+import api from "../api/client";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../lib/AuthContext";
+import AppLayout from "../components/layout/AppLayout";
 
 export default function Profile() {
   const { user, setUser } = useContext<any>(AuthContext);
@@ -10,40 +10,50 @@ export default function Profile() {
   const nav = useNavigate();
 
   useEffect(() => {
-    if (user) setFullName(user.full_name || "");
-    else {
-      (async () => {
-        const r = await apiRequest("/api/v1/profile/");
-        if (r.ok) {
-          setFullName((r.data as any).full_name || "");
-        }
-      })();
+    if (user) {
+      setFullName(user.full_name || "");
+      return;
     }
+    (async () => {
+      try {
+        const res = await api.get("/profile/");
+        setFullName(res.data.full_name || "");
+      } catch {}
+    })();
   }, [user]);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    const r = await apiRequest("/api/v1/profile/", {
-      method: "PUT",
-      body: JSON.stringify({ full_name: fullName }),
-    });
-    if (r.ok) {
-      // update context user
-      if (setUser) setUser({ ...user, full_name: fullName });
+    try {
+      const res = await api.put("/profile/", { full_name: fullName });
+      if (setUser) setUser(res.data);
       nav("/dashboard");
-    } else {
-      alert(r.error || "Could not save profile");
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || err?.message || "Could not save profile";
+      alert(msg);
     }
   }
 
   return (
-    <div style={{ padding: 16, maxWidth: 560, margin: "auto" }}>
-      <h2>Edit Profile</h2>
-      <form onSubmit={save}>
-        <label>Full name</label>
-        <input value={fullName} onChange={(e) => setFullName(e.target.value)} style={{ width: "100%", padding: 8, marginBottom: 12 }} />
-        <button>Save</button>
-      </form>
-    </div>
+    <AppLayout>
+      <div className="max-w-2xl">
+        <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
+
+        <form onSubmit={save} className="bg-white p-6 rounded-lg shadow">
+          <label className="block mb-2 text-sm">Full name</label>
+          <input
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full rounded border p-2 mb-4"
+          />
+
+          <div className="flex justify-end">
+            <button className="rounded-lg bg-slate-900 text-white px-4 py-2">
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </AppLayout>
   );
 }

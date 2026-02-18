@@ -1,7 +1,7 @@
-﻿# backend/app/models/users.py
-from sqlalchemy import Column, Integer, String, Boolean
+﻿from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 from backend.app.db.session import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -13,6 +13,5 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     role = Column(String, default="user")
 
-    # Link to Task model so SQLAlchemy can configure mappers correctly.
-    # This name ("tasks") must match the back_populates used in your Task model.
-    tasks = relationship("Task", back_populates="user", cascade="all, delete-orphan")
+    # ✅ REQUIRED for Task relationship
+    tasks = relationship("Task", back_populates="owner", cascade="all, delete")
