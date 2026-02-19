@@ -1,4 +1,3 @@
-// src/App.tsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
@@ -8,18 +7,17 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import ItemsList from "./pages/items/ItemsList";
-import ItemNew from "./pages/items/ItemNew"; // ✅ added
+import ItemNew from "./pages/items/ItemNew";
+import ItemEdit from "./pages/items/ItemEdit"; // ✅ added
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function LayoutRoutes() {
   const location = useLocation();
-  // hide header on auth pages
   const hideHeader = location.pathname === "/login" || location.pathname === "/register";
 
   return (
     <>
       {!hideHeader && <Header />}
-
       <main className="max-w-7xl mx-auto px-4 py-6">
         <Routes>
           {/* Public */}
@@ -35,7 +33,6 @@ function LayoutRoutes() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/profile"
             element={
@@ -45,7 +42,7 @@ function LayoutRoutes() {
             }
           />
 
-          {/* ✅ NEW ITEM PAGE (must be above /items) */}
+          {/* Items */}
           <Route
             path="/items/new"
             element={
@@ -54,7 +51,14 @@ function LayoutRoutes() {
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/items/:id/edit"
+            element={
+              <ProtectedRoute>
+                <ItemEdit />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/items"
             element={

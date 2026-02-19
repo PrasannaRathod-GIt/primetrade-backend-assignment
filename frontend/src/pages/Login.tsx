@@ -1,28 +1,42 @@
 import React, { useContext, useState } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom"; // Added Link
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import api from "../api/client";
 import { AuthContext, User } from "../lib/AuthContext";
 
+/** Narrow unknown error to string */
+function getErrorMessage(err: unknown, fallback = "Login failed"): string {
+  if (!err) return fallback;
+  if (typeof err === "string") return err;
+  if (err instanceof Error) return err.message;
+  try {
+    const maybe = err as { response?: { data?: { detail?: string } }; message?: string };
+    return maybe.response?.data?.detail ?? maybe.message ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { setUser } = useContext(AuthContext); // Removed 'as any'
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+
+  const auth = useContext(AuthContext);
+  const setUser = auth?.setUser ?? null;
+
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Safely cast location state to handle the redirect path
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/dashboard";
+  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || "/dashboard";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      // OAuth2 password form expected by FastAPI
       const body = new URLSearchParams();
       body.append("username", email);
       body.append("password", password);
 
+      // If your "api" is an axios instance, typing <{ access_token: string }>
       const res = await api.post<{ access_token: string }>("/auth/token", body, {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
 
       const token = res.data?.access_token;
@@ -30,14 +44,16 @@ export default function Login() {
 
       localStorage.setItem("token", token);
 
-      // Load current user into context with proper typing
+      // fetch current user
       const me = await api.get<User>("/auth/me");
-      setUser(me.data);
+      if (typeof setUser === "function") {
+        setUser(me.data);
+      }
 
       navigate(from, { replace: true });
-    } catch (err: any) {
-      const msg = err?.response?.data?.detail || err?.message || "Login failed";
-      alert(msg);
+    } catch (err: unknown) {
+      console.error("Login error:", err);
+      alert(getErrorMessage(err));
     }
   }
 
@@ -53,7 +69,7 @@ export default function Login() {
             type="email"
             placeholder="Email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
 
@@ -63,16 +79,18 @@ export default function Login() {
             type="password"
             placeholder="Password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
 
-          <button type="submit" className="w-full rounded-lg bg-blue-600 text-white py-2 font-medium hover:bg-blue-700 transition-colors">
+          <button
+            type="submit"
+            className="w-full rounded-lg bg-blue-600 text-white py-2 font-medium hover:bg-blue-700 transition-colors"
+          >
             Sign in
           </button>
         </form>
 
-        {/* --- NEW REGISTER SECTION --- */}
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
             New user?{" "}
@@ -81,7 +99,6 @@ export default function Login() {
             </Link>
           </p>
         </div>
-        {/* ---------------------------- */}
       </div>
     </div>
   );

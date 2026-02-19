@@ -1,17 +1,36 @@
-// src/pages/items/ItemNew.tsx
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/client";
 import { AuthContext } from "../../lib/AuthContext";
 
+type NewItemPayload = {
+  title: string;
+  description?: string;
+  price?: number;
+};
+
+function getErrorMessage(err: unknown, fallback = "Failed to create item"): string {
+  if (!err) return fallback;
+  if (typeof err === "string") return err;
+  if (err instanceof Error) return err.message;
+  try {
+    const maybe = err as { response?: { data?: { detail?: string } }; message?: string };
+    return maybe.response?.data?.detail ?? maybe.message ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export default function ItemNew() {
-  const { user } = useContext(AuthContext);
+  const auth = useContext(AuthContext);
+  const user = auth?.user ?? null;
+
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
   const [price, setPrice] = useState<number | "">("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!user) {
@@ -29,19 +48,15 @@ export default function ItemNew() {
     setLoading(true);
 
     try {
-      const payload: any = {
-        title,
-        description,
-      };
+      const payload: NewItemPayload = { title, description: description || undefined };
       if (price !== "") payload.price = Number(price);
 
-      // api client should include Authorization header already; otherwise add it here
       await api.post("/items", payload);
-      // go back to items list and allow it to re-fetch (react-query invalidation)
+      // Back to items list; ItemsList should re-fetch via invalidation or staleTime
       navigate("/items");
-    } catch (err: any) {
-      console.error(err);
-      setError(err?.response?.data?.detail || "Failed to create item");
+    } catch (err: unknown) {
+      console.error("Create item error:", err);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -96,11 +111,7 @@ export default function ItemNew() {
             {loading ? "Saving..." : "Create"}
           </button>
 
-          <button
-            type="button"
-            onClick={() => navigate("/items")}
-            className="px-4 py-2 border rounded"
-          >
+          <button type="button" onClick={() => navigate("/items")} className="px-4 py-2 border rounded">
             Cancel
           </button>
         </div>

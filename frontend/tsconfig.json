@@ -12,16 +12,16 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
 
-    "strict": false,
-    "noImplicitAny": false,
-    "strictNullChecks": false,
+    "strict": true,                    // Optional: enable for full TS safety
+    "noImplicitAny": true,             // Ensures no accidental `any`
+    "strictNullChecks": true,          // Better null safety
 
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
 
-    "types": ["vite/client"]
+    "types": ["vite/client", "react", "react-dom"]  // Add React types here
   },
   "include": ["src"]
 }

@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../lib/AuthContext";
+// ✅ Import the Type
+import { AuthContext, type AuthContextType } from "../lib/AuthContext";
 import { apiRequest } from "../lib/api";
 import { logout as authLogout } from "../lib/auth";
 import { useNavigate } from "react-router-dom";
 
-// Define Task interface to avoid 'any' red lines
 interface Task {
   id: number;
   title?: string;
@@ -12,10 +12,13 @@ interface Task {
 }
 
 export default function Dashboard() {
-  const { user } = useContext(AuthContext);
+  // ✅ Explicit typing and null fallback
+  const auth = useContext(AuthContext) as AuthContextType | null;
+  const user = auth?.user ?? null;
+  
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(true);
-  const [showLogoutModal, setShowLogoutModal] = useState(false); // State for confirmation popup
+  const [showLogoutModal, setShowLogoutModal] = useState(false); 
   const nav = useNavigate();
 
   useEffect(() => {
@@ -24,7 +27,6 @@ export default function Dashboard() {
     (async () => {
       setLoadingTasks(true);
       try {
-        // Fetch tasks using the helper with generic type
         const t = await apiRequest<Task[] | { data: Task[] }>("/api/v1/tasks/");
         if (mounted && t && t.ok && t.data) {
           if (Array.isArray(t.data)) {
@@ -44,19 +46,18 @@ export default function Dashboard() {
     };
   }, [user]);
 
-  // The actual logout function triggered inside the popup
   function confirmLogout() {
     authLogout();
     nav("/login");
   }
 
+  // ✅ Keep returns AFTER all hooks (useEffect, useState)
   if (!user) return <div className="p-6 text-center">Loading profile...</div>;
 
   return (
     <div className="px-4 py-6">
       <h1 className="text-2xl font-semibold mb-6">Dashboard</h1>
 
-      {/* Profile Section */}
       <section className="mb-6 bg-white p-4 rounded-lg shadow-sm border">
         <h3 className="font-semibold mb-2 text-gray-700">Profile</h3>
         <div className="text-gray-600">{user.full_name ?? user.email}</div>
@@ -70,7 +71,6 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Tasks Section */}
       <section className="bg-white p-4 rounded-lg shadow-sm border">
         <h3 className="font-semibold mb-2 text-gray-700">Your Tasks</h3>
         {loadingTasks ? (
@@ -86,7 +86,6 @@ export default function Dashboard() {
         )}
       </section>
 
-      {/* --- LOGOUT CONFIRMATION MODAL --- */}
       {showLogoutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl">

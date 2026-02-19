@@ -1,51 +1,63 @@
 import React, { useContext, useEffect, useState } from "react";
 import api from "../api/client";
 import { useNavigate } from "react-router-dom";
-import { AuthContext, User } from "../lib/AuthContext";
+// ✅ Import AuthContextType to assist with safety
+import { AuthContext, type User, type AuthContextType } from "../lib/AuthContext";
+
+function getErrorMessage(err: unknown, fallback = "Could not save profile"): string {
+  if (!err) return fallback;
+  if (typeof err === "string") return err;
+  if (err instanceof Error) return err.message;
+  try {
+    const maybe = err as { response?: { data?: { detail?: string; message?: string } }; message?: string };
+    return maybe.response?.data?.detail ?? maybe.response?.data?.message ?? maybe.message ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 export default function Profile() {
-  const { user, setUser } = useContext(AuthContext) as any;
-  const [fullName, setFullName] = useState<string>("");
-  const [isSaving, setIsSaving] = useState(false);
+  const auth = useContext(AuthContext) as AuthContextType | null;
   const nav = useNavigate();
 
-  // Load the name into the input field when the component loads
+  // ✅ RULES OF HOOKS: All hooks must go FIRST, before any 'if' returns
+  const [fullName, setFullName] = useState<string>(""); 
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  // We use optional chaining (auth?.user) because we haven't checked if it's null yet
   useEffect(() => {
-    if (user?.full_name) {
-      setFullName(user.full_name);
+    if (auth?.user?.full_name) {
+      setFullName(auth.user.full_name);
     }
-  }, [user]);
+  }, [auth?.user]);
+
+  // ✅ Now that all hooks are declared, we can safely return early
+  if (!auth) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-red-600 font-medium">
+          Auth provider not found. Make sure the app is wrapped with AuthProvider.
+        </p>
+      </div>
+    );
+  }
+
+  const { user, setUser } = auth;
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setIsSaving(true);
-    
+
     try {
-      /**
-       * Note: Since your axios baseURL is "http://localhost:8000/api/v1",
-       * we only need to provide the remaining path: "/auth/me"
-       */
-      const res = await api.put<User>("/auth/me", { 
-        full_name: fullName 
-      });
-
-      if (setUser) {
-        // res.data contains the updated user object from the backend
-        setUser({
-          ...user,
-          ...res.data
-        });
+      const res = await api.put<User>("/auth/me", { full_name: fullName });
+      if (typeof setUser === "function") {
+        setUser(res.data);
       }
-
       alert("Profile updated successfully!");
       nav("/dashboard");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Save error:", err);
-      const msg =
-        err?.response?.data?.detail ||
-        err?.message ||
-        "Could not save profile";
-      alert(msg);
+      alert(getErrorMessage(err));
     } finally {
       setIsSaving(false);
     }
@@ -71,7 +83,7 @@ export default function Profile() {
         <div className="mb-8">
           <label className="block mb-2 text-sm font-semibold text-gray-700">Full Name</label>
           <input
-            value={fullName}
+            value={fullName ?? ""}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="e.g. John Doe"
             className="w-full rounded-lg border border-gray-300 p-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition-all"

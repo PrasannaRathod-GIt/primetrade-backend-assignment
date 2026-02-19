@@ -1,14 +1,6 @@
-// src/components/ProtectedRoute.tsx
 import React, { useContext } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../lib/AuthContext";
-
-// Define what your user looks like
-interface User {
-  role?: string;
-  roles?: string[];
-  [key: string]: any; 
-}
 
 type Props = {
   children: React.ReactNode;
@@ -22,20 +14,22 @@ export default function ProtectedRoute({ children, roles }: Props) {
   if (!auth) return null;
   const { user, loading } = auth;
 
-  if (loading) return <div className="p-6 text-center">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="p-6 text-center animate-pulse">Loading...</div>
+      </div>
+    );
+  }
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // With the updated User interface, user.role and user.roles are now native!
   if (roles && roles.length > 0) {
-    // Cast user to our Interface instead of 'any'
-    const currentUser = user as User;
-    const userRole = currentUser.role ?? currentUser.roles ?? null;
-    
-    const hasRole = Array.isArray(userRole) 
-      ? roles.some(r => userRole.includes(r)) 
-      : userRole && roles.includes(userRole);
+    const hasRole = roles.includes(user.role) || 
+                   (user.roles && roles.some(r => user.roles!.includes(r)));
 
     if (!hasRole) {
       return <Navigate to="/" replace />;

@@ -8,9 +8,17 @@ export type ApiResponse<T = unknown> = {
   error?: string;
 };
 
-async function parseResponse(res: Response): Promise<any> {
+async function parseResponse(res: Response): Promise<unknown> {
   const text = await res.text();
-  try { return JSON.parse(text); } catch { return text; }
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+function asRecord(obj: unknown): Record<string, unknown> | null {
+  return obj && typeof obj === "object" && !Array.isArray(obj) ? (obj as Record<string, unknown>) : null;
 }
 
 export async function apiRequest<T = unknown>(path: string, opts: RequestInit = {}): Promise<ApiResponse<T>> {
@@ -26,16 +34,15 @@ export async function apiRequest<T = unknown>(path: string, opts: RequestInit = 
   const parsed = await parseResponse(res);
 
   if (!res.ok) {
-    // Fixed: safer way to access error properties without using 'any'
     let errorMessage = res.statusText;
-    if (parsed && typeof parsed === 'object') {
-      errorMessage = (parsed as Record<string, any>).detail || 
-                     (parsed as Record<string, any>).error || 
-                     (parsed as Record<string, any>).message || 
-                     res.statusText;
+    const rec = asRecord(parsed);
+    if (rec) {
+      if (typeof rec.detail === "string") errorMessage = rec.detail;
+      else if (typeof rec.error === "string") errorMessage = rec.error;
+      else if (typeof rec.message === "string") errorMessage = rec.message;
     }
-    
     return { ok: false, status: res.status, error: String(errorMessage) };
   }
+
   return { ok: true, status: res.status, data: parsed as T };
 }

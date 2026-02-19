@@ -2,7 +2,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { AuthProvider } from "./lib/AuthContext";
+import { AuthProvider } from "./lib/AuthProvider";
+
 import './index.css';
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

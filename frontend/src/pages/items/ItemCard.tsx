@@ -1,7 +1,6 @@
 import React, { useContext } from "react";
-import { AuthContext } from "../../lib/AuthContext";
+import { AuthContext, type AuthContextType } from "../../lib/AuthContext";
 
-// Define proper Owner type instead of `any`
 type Owner = {
   id: number;
   email: string;
@@ -14,7 +13,7 @@ type Item = {
   description?: string;
   price?: number;
   status?: string;
-  owner?: Owner; // replaced `any` with Owner
+  owner?: Owner;
   owner_id?: number;
   image_url?: string;
   created_at?: string;
@@ -27,24 +26,36 @@ type Props = {
 };
 
 export default function ItemCard({ item, onEdit, onDelete }: Props) {
-  const { user } = useContext(AuthContext);
+  // ✅ Explicitly type the context and get the user safely
+  const auth = useContext(AuthContext) as AuthContextType | null;
+  const user = auth?.user ?? null;
 
-  // Resolve owner id and display name robustly
-  const ownerId: number | null =
-    (item.owner_id as number) ??
-    (item.owner && typeof item.owner === "object" && (item.owner.id as number)) ??
-    null;
+  // ✅ Safely resolve Owner ID without confusing TypeScript
+  let ownerId: number | null = null;
+  if (typeof item.owner_id === "number") {
+    ownerId = item.owner_id;
+  } else if (item.owner && typeof item.owner === "object" && typeof item.owner.id === "number") {
+    ownerId = item.owner.id;
+  }
 
-  const ownerDisplay: string | null =
-    (typeof item.owner === "string" && item.owner) ??
-    (item.owner && typeof item.owner === "object" && (item.owner.full_name || item.owner.email)) ??
-    null;
+  // ✅ Safely resolve Owner Display Name without 'false' values slipping in
+  let ownerDisplay: string | null = null;
+  if (typeof item.owner === "string" && item.owner.trim() !== "") {
+    ownerDisplay = item.owner;
+  } else if (item.owner && typeof item.owner === "object") {
+    ownerDisplay = item.owner.full_name || item.owner.email || null;
+  }
 
   // Permission logic:
   const isOwnerById = Boolean(user && ownerId !== null && user.id === ownerId);
-  const isAdmin = Boolean(user && user.role === "admin");
-  const fallbackOwnerMatch =
-    Boolean(user && ownerDisplay && (ownerDisplay === user.email || ownerDisplay === user.full_name));
+  // We cast user to an object type that might have a role property
+// so we don't have to use 'any'
+const isAdmin = Boolean(
+  user && typeof user === "object" && "role" in user && user.role === "admin"
+);
+  const fallbackOwnerMatch = Boolean(
+    user && ownerDisplay && (ownerDisplay === user.email || ownerDisplay === user.full_name)
+  );
 
   const canEdit = Boolean(isOwnerById || isAdmin || fallbackOwnerMatch);
 
@@ -71,7 +82,6 @@ export default function ItemCard({ item, onEdit, onDelete }: Props) {
       <div className="flex items-start gap-4">
         <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
           {item.image_url ? (
-            
             <img src={item.image_url} alt={item.title} className="object-cover w-full h-full" />
           ) : (
             <svg className="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="none">
