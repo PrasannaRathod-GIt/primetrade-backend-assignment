@@ -1,4 +1,4 @@
-Scalability
+Scalability : (future changes)
 
 This section explains how to scale the Primetrade app (backend + frontend), what to watch for when adding new features, and a compact developer workflow you can paste into the README so contributors know exactly how to add features and keep the system scalable
 
