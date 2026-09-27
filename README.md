@@ -1,6 +1,6 @@
-# Primetrade — Full Project (Backend + Frontend)
+ Primetrade — Full Project (Backend + Frontend)
 
-## Overview
+ Overview
 A small, full-stack demo for the Primetrade assignment:
 - **Backend:** FastAPI (Python) — JWT auth, RBAC, Items CRUD, PostgreSQL.
 - **Frontend:** React (Vite + TypeScript) + Tailwind CSS — login, profile, dashboard, items CRUD, protected routes.
